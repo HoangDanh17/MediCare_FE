@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5faf7;
+  --foreground: #14201b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Xanh lá nhạt — tông y tế */
+  --color-brand-50: #f0faf5;
+  --color-brand-100: #dcf3e9;
+  --color-brand-200: #bde8d5;
+  --color-brand-300: #91d5ba;
+  --color-brand-400: #5fbc9a;
+  --color-brand-500: #38a17f;
+  --color-brand-600: #1f8566;
+  --color-brand-700: #1a6a53;
+  --color-brand-800: #175443;
+  --color-brand-900: #144538;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, "Segoe UI", system-ui, sans-serif);
+}
