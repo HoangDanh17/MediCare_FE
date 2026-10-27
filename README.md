@@ -41,6 +41,21 @@ npm run build
 npm start
 ```
 
+## Docker
+
+Image dùng `output: "standalone"` (xem `next.config.ts`): runtime chỉ gồm Node,
+`.next/standalone`, `.next/static` và `public`, chạy bằng user không phải root.
+
+```bash
+docker build -t medicare-fe .
+docker run --rm -p 3000:3000 \
+  -e API_BASE_URL=http://backend:5000 \
+  medicare-fe
+```
+
+`API_BASE_URL` được đọc lúc chạy, không bake vào image, nên cùng một image dùng
+được cho nhiều môi trường. Backend chỉ cần nằm trong cùng Docker network.
+
 ## Lưu ý triển khai nhiều instance
 
 Single-flight refresh nằm trong bộ nhớ của một tiến trình Next. Nếu chạy nhiều
