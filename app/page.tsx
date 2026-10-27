@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
+
+import { hasSession } from "@/lib/server-auth";
 
 const FEATURES = [
   {
@@ -63,8 +64,7 @@ const HIGHLIGHTS = [
 ];
 
 export default async function HomePage() {
-  const store = await cookies();
-  const loggedIn = Boolean(store.get("mc_access")?.value);
+  const loggedIn = await hasSession();
 
   return (
     <div className="min-h-screen bg-white">

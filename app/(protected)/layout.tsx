@@ -1,16 +1,15 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SessionProvider } from "@/hooks/use-session";
 import { Shell } from "@/components/shell";
+import { hasSession } from "@/lib/server-auth";
 
 export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Cookie do trình duyệt tự đặt sau đăng nhập (JS) — vẫn gửi lên server khi SSR.
-  const store = await cookies();
-  if (!store.get("mc_access")?.value) redirect("/login");
+  // Cookie phiên do BFF đặt sau đăng nhập (httpOnly) — luôn gửi lên server khi SSR.
+  if (!(await hasSession())) redirect("/login");
 
   return (
     <SessionProvider>

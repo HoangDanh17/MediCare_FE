@@ -96,11 +96,10 @@ export function RegisterForm() {
         gender: form.gender,
         dob: form.dob,
       };
-      await apiFetch<UserResponse>(
-        "/api/users",
-        { method: "POST", body: JSON.stringify(payload) },
-        { skipAuthRedirect: true },
-      );
+      await apiFetch<UserResponse>("/api/users", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 409) {

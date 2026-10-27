@@ -1,14 +1,13 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/login-form";
+import { hasSession } from "@/lib/server-auth";
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string; registered?: string; email?: string }>;
 }) {
-  const store = await cookies();
-  if (store.get("mc_access")?.value) redirect("/dashboard");
+  if (await hasSession()) redirect("/dashboard");
 
   const { next, registered, email } = await searchParams;
   return (

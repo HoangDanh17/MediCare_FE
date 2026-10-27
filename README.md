@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MediCare (Next.js)
 
-## Getting Started
+Giao diện quản trị MediCare. Trình duyệt **không** gọi thẳng backend và **không**
+giữ token: mọi lời gọi API đi qua BFF của Next.
 
-First, run the development server:
+## Kiến trúc
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Trình duyệt ──fetch /api/...──▶ Next Route Handlers ──Bearer token──▶ Backend
+              (cookie httpOnly)      (single-flight refresh)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `app/api/auth/login`, `app/api/auth/logout`: nhận/ghi cookie phiên httpOnly.
+- `app/api/[...path]`: proxy mọi endpoint còn lại, tự gắn `Authorization: Bearer`
+  và tự refresh khi access token hết hạn hoặc bị từ chối.
+- `lib/server-auth.ts`: đọc/ghi cookie, giữ refresh token và single-flight refresh.
+  Backend dùng refresh token một lần (dùng lại sẽ thu hồi toàn bộ phiên), nên các
+  request đồng thời phải dùng chung một lần refresh.
+- `lib/api-client.ts`: chỉ fetch cùng origin tới `/api/...`; 401 → chuyển /login,
+  403 → refetch quyền, 503 → báo lỗi tạm thời.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Token nằm trong cookie `HttpOnly; SameSite=Lax` (`Secure` khi production), không
+lưu ở `localStorage`/`sessionStorage` và không xuất hiện trong bundle client.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cấu hình
 
-## Learn More
+Tạo `.env` (xem `.env.example`):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+API_BASE_URL=http://localhost:5000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`API_BASE_URL` là biến **server-only**. Khi deploy, trỏ nó tới địa chỉ nội bộ của
+backend; backend không cần mở public port và không cần cấu hình CORS cho FE.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Chạy
 
-## Deploy on Vercel
+```bash
+npm run dev     # http://localhost:3000
+npm run build
+npm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Lưu ý triển khai nhiều instance
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Single-flight refresh nằm trong bộ nhớ của một tiến trình Next. Nếu chạy nhiều
+instance Next sau load balancer, các request đồng thời của cùng người dùng có
+thể rơi vào nhiều instance và cùng refresh → backend coi là dùng lại refresh
+token và thu hồi phiên. Cần sticky session theo cookie phiên, hoặc chạy một
+instance, hoặc chuyển trạng thái single-flight sang store dùng chung.

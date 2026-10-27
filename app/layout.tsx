@@ -19,9 +19,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // Tiện ích trình duyệt (dịch trang, dark mode…) gắn thêm class vào <html> trước
+    // khi hydrate → lệch className. React không vá attribute khi hydrate, nên chỉ
+    // cần tắt cảnh báo cho riêng thẻ này.
     <html
       lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
